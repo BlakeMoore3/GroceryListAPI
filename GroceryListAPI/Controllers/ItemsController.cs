@@ -16,19 +16,29 @@ namespace GroceryListAPI.Controllers
             _groceryListService = groceryListService;
         }
 
+        /// <summary>
+        /// Displays all the items on the grocery list
+        /// </summary>
+        /// <returns>The entire list of items</returns>
         [HttpGet]
         public ActionResult<List<Item>> GetAllItems()
         {
             return _groceryListService.GetAllItems();
         }
 
+        /// <summary>
+        /// Adds a new item to the grocery list
+        /// </summary>
+        /// <param name="name">The name for the item</param>
+        /// <param name="quantity">The quantity of the named item</param>
+        /// <returns>The newly added item including IsChecked set false and unique Id</returns>
         [HttpPost]
-        public ActionResult<Item> AddItem([FromBody] Item item)
+        public ActionResult<Item> AddItem([FromBody] string name, int quantity)
         {
             try
             {
-                Item createdItem = _groceryListService.AddItem(item);
-                return Ok(item);
+                Item createdItem = _groceryListService.AddItem(name, quantity);
+                return Ok(createdItem);
             }
             catch
             {
@@ -36,6 +46,11 @@ namespace GroceryListAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Will return a specific item based on item Id
+        /// </summary>
+        /// <param name="id">Id of item to search for</param>
+        /// <returns>The searched for item; If not found returns 404 error</returns>
         [HttpGet("{id}")]
         public ActionResult<Item> GetItemById(int id)
         {
@@ -49,6 +64,11 @@ namespace GroceryListAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Deletes an item from the list selected by item Id
+        /// </summary>
+        /// <param name="id">Id of the Item user wants to delete</param>
+        /// <returns>Returns 204 no content success; If item not found on list retruns 404 not found</returns>
         [HttpDelete]
         public ActionResult DeleteItem(int id)
         {
@@ -63,13 +83,39 @@ namespace GroceryListAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Will update an items Name and Quantity based on item Id
+        /// </summary>
+        /// <param name="id">Id of item to update</param>
+        /// <param name="name">New name for the item</param>
+        /// <param name="quantity">New Quantity for the item</param>
+        /// <returns>The item with an updated name and quantity</returns>
         [HttpPut]
-        public ActionResult<Item> UpdateItem(int id, [FromBody] Item item)
+        public ActionResult<Item> UpdateItem(int id, [FromBody] string? name, int quantity)
         {
             try
             {
-               _groceryListService.UpdateItem(id, item);
-                return Ok(item);
+               Item updatedItem = _groceryListService.UpdateItem(id, name, quantity);
+                return Ok(updatedItem);
+            }
+            catch
+            {
+                return BadRequest();
+            }
+        }
+
+        /// <summary>
+        /// Toggles IsChecked yes/no on the searched for item
+        /// </summary>
+        /// <param name="id">Id of item to toggle</param>
+        /// <returns>Full item with toggled IsChecked</returns>
+        [HttpPatch("{id}/toggle")]
+        public ActionResult<Item> ToggleIsChecked(int id)
+        {
+            try
+            {
+                Item updatedItem = _groceryListService.SelectItem(id);
+                return Ok(updatedItem);
             }
             catch
             {
