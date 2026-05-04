@@ -1,4 +1,5 @@
 ﻿using GroceryListAPI.Services;
+using GroceryListAPI.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using GroceryListAPI.Models;
@@ -9,11 +10,11 @@ namespace GroceryListAPI.Controllers
     [ApiController]
     public class ItemsController : ControllerBase
     {
-        private GroceryListService _groceryListService;
+        private GroceryDbContext _context;
         
-        public ItemsController(GroceryListService groceryListService) 
+        public ItemsController(GroceryDbContext context) 
         {
-            _groceryListService = groceryListService;
+            _context = context;
         }
 
         /// <summary>
@@ -23,7 +24,7 @@ namespace GroceryListAPI.Controllers
         [HttpGet]
         public ActionResult<List<Item>> GetAllItems()
         {
-            return _groceryListService.GetAllItems();
+            return _context.Items.ToList();
         }
 
         /// <summary>
@@ -33,12 +34,15 @@ namespace GroceryListAPI.Controllers
         /// <param name="quantity">The quantity of the named item</param>
         /// <returns>The newly added item including IsChecked set false and unique Id</returns>
         [HttpPost]
-        public ActionResult<Item> AddItem([FromBody] string name, int quantity)
+        public ActionResult<Item> AddItem([FromBody] Item item)
         {
             try
             {
-                Item createdItem = _groceryListService.AddItem(name, quantity);
-                return Ok(createdItem);
+                item.Id = 0;
+                item.IsChecked = false;
+                _context.Items.Add(item);
+                _context.SaveChanges();
+                return Ok(item);
             }
             catch
             {
